@@ -1,0 +1,8 @@
+[submodule "u-boot"]
+	path = u-boot
+	url = https://github.com/openRuyi-Project/u-boot.git
+	branch = spacemit-k1-vendor-2022.10
+[submodule "opensbi"]
+	path = opensbi
+	url = https://github.com/openRuyi-Project/opensbi.git
+	branch = k1-v1.9
