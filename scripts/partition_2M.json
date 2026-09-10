@@ -1,0 +1,44 @@
+{
+  "version": "1.0",
+  "format": "mtd",
+  "partitions": [
+    {
+      "name": "bootinfo",
+      "comment": "BootROM parameters; keep offset unchanged",
+      "offset": "0",
+      "size": "64K",
+      "image": "factory/bootinfo_spinor.bin"
+    },
+    {
+      "name": "private",
+      "offset": "64K",
+      "size": "64K"
+    },
+    {
+      "name": "fsbl",
+      "comment": "Primary FSBL at the offset specified by bootinfo",
+      "offset": "128K",
+      "size": "256K",
+      "image": "factory/FSBL.bin"
+    },
+    {
+      "name": "env",
+      "offset": "384K",
+      "size": "64K",
+      "image": "env.bin"
+    },
+    {
+      "name": "opensbi",
+      "comment": "The 448K-704K gap is reserved for the backup FSBL",
+      "offset": "704K",
+      "size": "640K",
+      "image": "fw_dynamic-k1.itb"
+    },
+    {
+      "name": "uboot",
+      "offset": "1344K",
+      "size": "2M",
+      "image": "u-boot.itb"
+    }
+  ]
+}
