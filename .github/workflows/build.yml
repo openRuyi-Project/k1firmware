@@ -1,0 +1,59 @@
+name: Build SpacemiT K1 Firmware
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CROSS_COMPILE: riscv64-linux-gnu-
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build All Firmware
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - uses: actions/checkout@v6
+        with:
+          repository: 'openRuyi-Project/linux'
+          path: 'linux'
+          fetch-depth: 1
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc-riscv64-linux-gnu device-tree-compiler u-boot-tools \
+            flex bison libssl-dev bc python3
+
+      - name: Build
+        run: make CROSS_COMPILE=${{ env.CROSS_COMPILE }} all
+
+      - name: Upload Firmware
+        uses: actions/upload-artifact@v7
+        with:
+          name: bl-spacemit-k1
+          path: dist/
+
+      - name: Archive Firmware
+        if: github.ref_type == 'tag'
+        run: |
+          tar -cJf bl-spacemit-k1-${{ github.ref_name }}.tar.xz \
+          --transform 's~^\.~bl-spacemit-k1-${{ github.ref_name }}~' \
+          -C dist .
+
+      - name: Upload Firmware to Release (on Tag Push)
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v3
+        with:
+          name: Boot Firmware for SpacemiT K1 ${{ github.ref_name }}
+          files: bl-spacemit-k1-${{ github.ref_name }}.tar.xz
+          prerelease: true
