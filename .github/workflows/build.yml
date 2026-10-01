@@ -32,10 +32,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             gcc-riscv64-linux-gnu device-tree-compiler u-boot-tools \
-            flex bison libssl-dev bc python3
+            flex bison libssl-dev bc python3 genimage
 
       - name: Build
-        run: make CROSS_COMPILE=${{ env.CROSS_COMPILE }} all
+        run: make CROSS_COMPILE=${{ env.CROSS_COMPILE }} sdcard
+
+      - name: Upload SD Boot Images
+        uses: actions/upload-artifact@v7
+        with:
+          name: bl-spacemit-k1-sdcard
+          path: output/sdcard/
+          if-no-files-found: error
 
       - name: Upload Firmware
         uses: actions/upload-artifact@v7
@@ -55,5 +62,8 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           name: Boot Firmware for SpacemiT K1 ${{ github.ref_name }}
-          files: bl-spacemit-k1-${{ github.ref_name }}.tar.xz
+          files: |
+            bl-spacemit-k1-${{ github.ref_name }}.tar.xz
+            output/sdcard/*.img
+            output/sdcard/*.sha256
           prerelease: true

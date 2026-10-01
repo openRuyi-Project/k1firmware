@@ -34,7 +34,7 @@ APT_DEPS_LINUX  := gcc-riscv64-linux-gnu flex bison libssl-dev bc
 # ─── Top-level targets ───────────────────────────────────────────────
 
 .PHONY: all clean check-deps install-deps submodules
-.PHONY: linux-dtbs u-boot opensbi opensbi-rva23 dist
+.PHONY: linux-dtbs u-boot opensbi opensbi-rva23 dist sdcard
 
 all: dist
 
@@ -46,6 +46,7 @@ check-deps:
 	$(call check_cmd,flex,flex)
 	$(call check_cmd,bison,bison)
 	$(call check_cmd,python3,python3)
+	$(call check_cmd,genimage,genimage)
 
 install-deps:
 	sudo apt-get update
@@ -53,7 +54,7 @@ install-deps:
 		$(APT_DEPS_COMMON) \
 		$(APT_DEPS_UBOOT) \
 		$(APT_DEPS_OPENSBI) \
-		$(APT_DEPS_LINUX)
+		$(APT_DEPS_LINUX) genimage
 
 # ─── Submodules ──────────────────────────────────────────────────────
 
@@ -95,6 +96,7 @@ dist: u-boot opensbi opensbi-rva23
 	cp $(CURDIR)/u-boot/u-boot.itb              $(DIST)/u-boot.itb
 	cp $(CURDIR)/u-boot/FSBL.bin               $(DIST)/factory/FSBL.bin
 	cp $(CURDIR)/u-boot/bootinfo_spinor.bin    $(DIST)/factory/bootinfo_spinor.bin
+	cp $(CURDIR)/u-boot/bootinfo_sd.bin        $(DIST)/factory/bootinfo_sd.bin
 	cp $(CURDIR)/u-boot/u-boot-env-default.bin $(DIST)/env.bin
 	cp $(OPENSBI_STD)                           $(DIST)/fw_dynamic-k1.itb
 	cp $(OPENSBI_RVA23)                         $(DIST)/fw_dynamic-k1-rva23.itb
@@ -102,6 +104,11 @@ dist: u-boot opensbi opensbi-rva23
 	cp scripts/flash.sh                        $(DIST)/flash.sh
 	cp scripts/flash.bat                       $(DIST)/flash.bat
 	@echo "==> Firmware collected in $(DIST)/"
+
+# SD boot firmware only; the OS is supplied on NVMe/USB/etc.
+sdcard: dist
+	bash scripts/make-sdcard.sh "$(DIST)" "$(OUTPUT)/sdcard" standard
+	bash scripts/make-sdcard.sh "$(DIST)" "$(OUTPUT)/sdcard" rva23
 
 # ─── Clean ───────────────────────────────────────────────────────────
 
